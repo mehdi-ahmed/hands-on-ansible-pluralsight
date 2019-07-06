@@ -1,0 +1,100 @@
+
+# Ansible PING: From the ACS server, ping the Web and DB servers. 
+
+		#sudo username and password vagrant/vagrant
+ 
+#I have 3 servers:
+	# ACS - Ansible Control Server - 'acs'
+	# Web Server - 'web'
+	# DB Server - 'db'
+	
+	# Make sure ansible is installed in the 3 servers.
+		
+	
+#Exercice 1  -
+	
+	#Step 1 
+	
+		# From the ACS
+	
+		>> vagrant ssh acs
+		>> mkdir exercice1
+		>> cd exercice 1
+		>> vi inventory
+
+			# add 2 @ip of 'db' and 'web' servers.
+				-----------
+				192.168.33.20
+				192.168.33.30
+				------------
+
+	# step 2 - ping 'web' 
+	 >> ansible 192.168.33.20 -i inventory -u vagrant -m ping -k
+	 
+	 # errors
+	 
+			 #error 1
+			 192.168.33.20 | FAILED => to use the 'ssh' connection type with passwords, you must install the sshpass program
+			 
+			 # Solution : Install sshpass
+			 >> sudo apt-get install sshpass
+			 
+			 #error2
+			 192.168.33.20 | FAILED => Using a SSH password instead of a key is not possible 
+			 because Host Key checking is enabled and sshpass does not support this.  
+			 Please add this host's fingerprint to your known_hosts file to manage this host.
+			 
+			 #Solution : Add fingerprint
+			 
+			 >> ssh vagrant@192.168.33.20
+			 
+			 #Error 3
+			 Permission denied (publickey,gssapi-keyex,gssapi-with-mic).
+			 
+			 #Solution - Enable certain ssh params in the CentOS machine 'web'
+				# Open another terminal and connect to web via vagrant
+				
+					>> vagrant ss web
+				# go to /etc/ssh/sshd_config and enable 'ýes'
+					- PermitRootLogin  yes
+					- PasswordAuthentication  yes
+					>>> sudo vi /etc/ssh/sshd_config
+					
+				# restart service and check status
+					[vagrant@web ~]$ sudo /bin/systemctl restart sshd.service
+					[vagrant@web ~]$ sudo /bin/systemctl status sshd.service
+					
+				# try again
+				>>> vagrant@acs:~$ sudo ssh vagrant@192.168.33.30
+					#OK
+					
+				>>> vagrant@acs:~$ ansible 192.168.33.20 -i inventory -u vagrant -m ping -k -vvv	
+					#OK
+				192.168.33.20 | SUCCESS => {
+					"ansible_facts": {
+						"discovered_interpreter_python": "/usr/bin/python"
+					},
+					"changed": false,
+					"invocation": {
+						"module_args": {
+							"data": "pong"
+						}
+					},
+					"ping": "pong"
+				}
+				
+				
+				# another way to do is to use a COMMAND module - There is also a Shell module - See difference
+				
+				# https://docs.ansible.com/ansible/latest/modules/shell_module.html
+				# Restart all machines
+				>> ansible all -i inventory -u vagrant -m command -a "/sbin/shutdown -h"
+				# Update all machines
+				>> ansible all -i inventory -u vagrant -m command -a "/ures/sbin/ yum update -u"
+				
+				# Since command is the defaultm you can just skip command : 
+				>> ansible all -i inventory -u vagrant -a "/ures/sbin/ yum update -u"
+
+	 
+	 
+	 

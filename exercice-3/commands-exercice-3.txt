@@ -1,0 +1,43 @@
+#This is the global structure of my working folder (ansible-folder):
+.
+├── production
+│   ├── group_vars
+│   │   ├── all    			// YAML file
+│   │   ├── db 				// YAML file
+│   │   └── webservers 		// YAML file
+│   ├── host_vars
+│   │   └── web1			// YAML file
+│   └── inventory_prod
+└── test
+    ├── group_vars
+    │   ├── all				// YAML file
+    │   └── db				// YAML file
+    ├── host_vars
+    │   └── web1			// YAML file
+    └── inventory_test 		// Inventory file
+
+#1
+#We create YAML file all in group_vars
+
+#We run this command :
+>>>ansible webservers -i inventory_prod -m user -a "name={{username}}"  -u vagrant --ask-pass --become --ask-become-pass
+
+# 'all_username' username was fetched  and created from group_vars/all file
+
+#2
+#We create YAML file all in group_vars webservers 
+# We run the same command
+
+>>>ansible webservers -i inventory_prod -m user -a "name={{username}}"  -u vagrant --ask-pass --become --ask-become-pass
+# 'group_user' username was fetched and created from the group_vars/webservers file
+# webservers is a group set in the inventory file.
+
+
+#the webservers username will take precendence over the all_username if we run the same command
+
+#3, finally
+#now let's create a user in the host_vars/web1 and run it against the webserver group in the inventory
+#same command
+ansible webservers -i inventory_prod -m user -a "name={{username}}" --ask-pass --become --ask-become-pass
+
+#This time the user web1_user in host_vars/web1 will take priority and will be creasted
